@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JAN-SAMADHAN AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F3;
+    --surface:#FFFFFF;
+    --surface-2:#EFF2ED;
+    --ink:#1B2320;
+    --muted:#5B655F;
+    --border:#DDE2D9;
+    --primary:#123A34;
+    --primary-2:#1F5A50;
+    --accent:#C1791F;
+    --accent-tint:#F6E9D4;
+    --info:#2F4E8F;
+    --info-tint:#E5EAF5;
+    --danger:#A63325;
+    --danger-tint:#F5E1DC;
+    --success:#1F7A4D;
+    --success-tint:#DFF0E5;
+    --neutral-tint:#E9ECE6;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(20,30,25,.06), 0 4px 14px rgba(20,30,25,.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Source Serif 4', Georgia, serif;
+    color:var(--primary);
+    margin:0;
+    font-weight:600;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:14px;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;flex-direction:column;gap:2px;}
+  .brand-name{font-size:22px;font-weight:700;letter-spacing:0.2px;}
+  .brand-sub{font-size:13px;color:var(--muted);}
+  .roles{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:999px;}
+  .roles button{
+    border:none;background:transparent;padding:9px 18px;border-radius:999px;
+    font-size:13.5px;font-weight:600;color:var(--muted);transition:background .15s, color .15s;
+  }
+  .roles button.active{background:var(--primary);color:#fff;}
+  .roles button:not(.active):hover{color:var(--ink);}
+
+  main{max-width:1180px;margin:0 auto;padding:32px 32px 80px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .view-head{margin-bottom:24px;}
+  .view-head h2{font-size:26px;}
+  .view-head p{color:var(--muted);margin-top:6px;font-size:14.5px;max-width:640px;}
+
+  /* ---------- Layout helpers ---------- */
+  .grid-2{display:grid;grid-template-columns:1.05fr 1.3fr;gap:24px;align-items:start;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:880px){ .grid-2{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+  }
+  .card h3{font-size:16px;margin-bottom:14px;}
+
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px;margin-top:14px;}
+  label:first-child{margin-top:0;}
+  input[type=text], textarea, select{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:7px;
+    background:#fcfdfb;color:var(--ink);
+  }
+  textarea{resize:vertical;min-height:80px;}
+  input:focus, textarea:focus, select:focus{outline:2px solid var(--primary-2);outline-offset:1px;}
+
+  .row-inline{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field-hint{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 18px;border-radius:7px;border:1px solid transparent;
+    font-size:13.5px;font-weight:600;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-2);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--ink);}
+  .btn-ghost:hover{background:var(--surface-2);}
+  .btn-outline-danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}
+  .btn-outline-danger:hover{background:var(--danger-tint);}
+  .btn-small{padding:6px 12px;font-size:12.5px;}
+  .btn-block{width:100%;justify-content:center;margin-top:18px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .chip{
+    display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;
+    font-size:11.5px;font-weight:600;
+  }
+  .chip-neutral{background:var(--neutral-tint);color:var(--muted);}
+  .chip-info{background:var(--info-tint);color:var(--info);}
+  .chip-accent{background:var(--accent-tint);color:var(--accent);}
+  .chip-danger{background:var(--danger-tint);color:var(--danger);}
+  .chip-success{background:var(--success-tint);color:var(--success);}
+
+  /* ---------- Pipeline stepper ---------- */
+  .stepper{display:flex;align-items:center;gap:4px;margin-top:10px;flex-wrap:wrap;}
+  .step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+  .step .dot{width:9px;height:9px;border-radius:50%;background:var(--border);}
+  .step.done .dot{background:var(--success);}
+  .step.current .dot{background:var(--accent);}
+  .step.done, .step.current{color:var(--ink);font-weight:600;}
+  .step-line{width:16px;height:1px;background:var(--border);}
+
+  /* ---------- Report list ---------- */
+  .report-item{
+    border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;background:var(--surface);
+  }
+  .report-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+  .report-title{font-weight:600;font-size:14.5px;}
+  .report-meta{color:var(--muted);font-size:12.5px;margin-top:3px;}
+
+  .processing{
+    display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--accent);font-weight:600;margin-top:8px;
+  }
+  .spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent-tint);border-top-color:var(--accent);animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---------- Reviewer table ---------- */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .filters select{width:auto;padding:8px 10px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;
+    padding:8px 12px;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tbody tr:hover{background:var(--surface-2);}
+  .row-detail{background:var(--surface-2);}
+  .row-detail td{padding:18px;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .detail-block h4{font-size:12.5px;color:var(--muted);text-transform:none;margin-bottom:6px;font-family:'IBM Plex Sans';font-weight:700;}
+  .actions-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+  /* ---------- Partner view ---------- */
+  .partner-list{display:flex;flex-direction:column;gap:8px;}
+  .partner-card{
+    border:1px solid var(--border);border-radius:9px;padding:12px 14px;background:var(--surface);cursor:pointer;
+  }
+  .partner-card.active{border-color:var(--primary-2);background:var(--info-tint);}
+  .partner-card .pname{font-weight:600;font-size:13.5px;}
+  .partner-card .ptags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;}
+
+  .match-item{
+    border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--surface);cursor:pointer;
+  }
+  .match-item.selected{border-color:var(--accent);}
+  .match-bar-track{height:6px;background:var(--neutral-tint);border-radius:99px;margin-top:10px;overflow:hidden;}
+  .match-bar-fill{height:100%;background:var(--accent);}
+
+  .workspace{margin-top:20px;}
+  .task-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;}
+  .task-item:last-child{border-bottom:none;}
+  .task-item input{width:auto;}
+  .task-item.done label{text-decoration:line-through;color:var(--muted);}
+  .milestone{margin-bottom:14px;}
+  .milestone-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+  .milestone-bar{height:8px;background:var(--neutral-tint);border-radius:99px;overflow:hidden;}
+  .milestone-fill{height:100%;background:var(--primary-2);}
+  .feed{margin-top:10px;}
+  .feed-item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .feed-item .fmeta{color:var(--muted);font-size:11.5px;margin-bottom:2px;}
+
+  /* ---------- Impact view ---------- */
+  .kpi-card{padding:18px;}
+  .kpi-num{font-family:'Source Serif 4',serif;font-size:32px;font-weight:700;color:var(--primary);}
+  .kpi-label{font-size:12.5px;color:var(--muted);margin-top:4px;}
+
+  .pipeline{display:flex;align-items:stretch;gap:0;margin-top:6px;overflow-x:auto;padding-bottom:6px;}
+  .pstage{flex:1;min-width:120px;text-align:center;padding:16px 10px;position:relative;}
+  .pstage .pnum{font-size:11px;color:var(--muted);font-weight:600;}
+  .pstage .pcount{font-family:'Source Serif 4',serif;font-size:26px;color:var(--primary);margin:4px 0;}
+  .pstage .plabel{font-size:12px;color:var(--ink);font-weight:600;}
+  .parrow{width:26px;display:flex;align-items:center;justify-content:center;color:var(--border);font-size:16px;}
+
+  .bar-row{display:grid;grid-template-columns:170px 1fr 34px;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;}
+  .bar-track{height:14px;background:var(--neutral-tint);border-radius:5px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--primary-2);border-radius:5px;}
+
+  .district-table td, .district-table th{padding:9px 12px;}
+
+  footer{
+    text-align:center;padding:26px 0 40px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border);margin-top:10px;
+  }
+
+  .empty{color:var(--muted);font-size:13.5px;padding:20px 0;text-align:center;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-name">JAN-SAMADHAN AI</div>
+    <div class="brand-sub">Disaster Management System for Jharkhand Government</div>
+  </div>
+  <nav class="roles" id="roleNav">
+    <button data-role="citizen" class="active">Citizen</button>
+    <button data-role="reviewer">Reviewer</button>
+    <button data-role="partner">Partner</button>
+    <button data-role="impact">Impact</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ CITIZEN VIEW ============ -->
+  <section class="view active" id="view-citizen">
+    <div class="view-head">
+      <h2>Report a challenge</h2>
+      <p>Submit a local issue with a description and location. It's checked, classified and routed to the right partner automatically.</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>New report</h3>
+        <label for="c-title">Title</label>
+        <input type="text" id="c-title" placeholder="e.g. Embankment breach near Subarnarekha river" />
+
+        <label for="c-desc">Description</label>
+        <textarea id="c-desc" placeholder="Describe what's happening, who is affected, and any immediate risk."></textarea>
+
+        <div class="row-inline">
+          <div>
+            <label for="c-district">District</label>
+            <select id="c-district">
+              <option>Ranchi</option><option>Dhanbad</option><option>Jamshedpur (East Singhbhum)</option>
+              <option>Bokaro</option><option>Hazaribagh</option><option>Deoghar</option>
+              <option>Giridih</option><option>Palamu</option><option>Ramgarh</option><option>Chaibasa (West Singhbhum)</option>
+            </select>
+          </div>
+          <div>
+            <label for="c-evidence">Evidence</label>
+            <select id="c-evidence">
+              <option value="photo">Photo attached</option>
+              <option value="voice">Voice note attached</option>
+              <option value="none">No evidence yet</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-hint" id="locHint">Location: not attached</div>
+        <button class="btn btn-ghost btn-small" style="margin-top:8px" onclick="attachLocation()">📍 Use current location</button>
+
+        <button class="btn btn-primary btn-block" onclick="submitReport()">Submit report</button>
+      </div>
+
+      <div>
+        <h3 style="margin-bottom:14px;">My reports</h3>
+        <div id="citizenReports"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEWER VIEW ============ -->
+  <section class="view" id="view-reviewer">
+    <div class="view-head">
+      <h2>Verified repository</h2>
+      <p>Check evidence, confirm the AI's category and urgency call, and route validated reports for partner matching.</p>
+    </div>
+    <div class="filters">
+      <select id="f-status" onchange="renderReviewer()">
+        <option value="">All statuses</option>
+        <option>Submitted</option><option>Needs evidence</option><option>Classified</option>
+        <option>Matched</option><option>In progress</option><option>Resolved</option>
+      </select>
+      <select id="f-category" onchange="renderReviewer()">
+        <option value="">All categories</option>
+      </select>
+      <select id="f-district" onchange="renderReviewer()">
+        <option value="">All districts</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table>
+        <thead><tr><th>Report</th><th>District</th><th>Category</th><th>Urgency</th><th>Status</th><th></th></tr></thead>
+        <tbody id="reviewerBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ PARTNER VIEW ============ -->
+  <section class="view" id="view-partner">
+    <div class="view-head">
+      <h2>Partner matching &amp; collaboration</h2>
+      <p>Pick a responding organisation to see the challenges matched to its skills, then open the shared workspace.</p>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h3 style="margin-bottom:10px;">Responding partners</h3>
+        <div class="partner-list" id="partnerList"></div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:10px;">Matched challenges</h3>
+        <div id="matchList"></div>
+        <div id="workspaceHost"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ IMPACT VIEW ============ -->
+  <section class="view" id="view-impact">
+    <div class="view-head">
+      <h2>Pilot &amp; impact</h2>
+      <p>How reports move through the pipeline, and what's been resolved so far.</p>
+    </div>
+
+    <div class="grid-3" id="kpiRow" style="margin-bottom:24px;"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h3>Report → Verify → Match → Collaborate → Measure</h3>
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Reports by category</h3>
+        <div id="categoryBars"></div>
+      </div>
+      <div class="card">
+        <h3>Reports by district</h3>
+        <table class="district-table">
+          <thead><tr><th>District</th><th>Reports</th><th>Resolved</th></tr></thead>
+          <tbody id="districtBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Disaster Management System for Jharkhand Government</footer>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const CATEGORY_KEYWORDS = {
+  'Flood': ['flood','waterlogg','overflow','river','embankment','breach','submerg','rain'],
+  'Landslide': ['landslide','slope','hill','debris','rockfall','slide','erosion'],
+  'Drought': ['drought','dry spell','irrigation','crop fail','rainfall deficit','parched'],
+  'Forest Fire': ['fire','forest','wildfire','blaze','smoke','burning'],
+  'Industrial Hazard': ['leak','chemical','factory','industrial','explosion','mine','gas'],
+  'Infrastructure Damage': ['bridge','road','building','collapse','crack','damaged','pothole'],
+  'Public Health': ['disease','outbreak','hospital','contamina','health','epidemic','fever'],
+  'Water Scarcity': ['water supply','borewell','handpump','scarcity','no water','tanker']
+};
+const URGENT_WORDS = ['trapped','urgent','emergency','collapsed','injured','critical','immediate','stranded','life'];
+
+const PARTNERS = [
+  {id:'p1', name:'IIT (ISM) Dhanbad — Civil & Structural Engg.', tags:['Infrastructure Damage','Landslide'], district:'Dhanbad'},
+  {id:'p2', name:'RIMS Ranchi — Public Health Unit', tags:['Public Health','Flood'], district:'Ranchi'},
+  {id:'p3', name:'Tata Steel CSR — Industrial Safety Cell', tags:['Industrial Hazard'], district:'Jamshedpur (East Singhbhum)'},
+  {id:'p4', name:'Birsa Agricultural University — Drought Resilience Lab', tags:['Drought','Water Scarcity'], district:'Ranchi'},
+  {id:'p5', name:'State Disaster Response Force — Unit 3', tags:['Flood','Landslide','Forest Fire'], district:'Ramgarh'},
+  {id:'p6', name:'Central Coalfields Ltd. — Mine Safety Wing', tags:['Industrial Hazard','Infrastructure Damage'], district:'Bokaro'}
+];
+
+const CATEGORY_TASKS = {
+  'Flood': ['Assess affected households','Coordinate boat / rescue teams','Set up temporary shelter','Distribute relief supplies'],
+  'Landslide': ['Survey slope stability','Evacuate at-risk structures','Clear access road debris','Install warning signage'],
+  'Drought': ['Survey groundwater levels','Identify recharge sites','Plan water tanker schedule','Assess crop-insurance support'],
+  'Forest Fire': ['Map fire perimeter','Coordinate firefighting units','Assess forest & wildlife damage','Plan replantation'],
+  'Industrial Hazard': ['Contain leak / hazard source','Evacuate nearby residents','Test air & water quality','File safety compliance report'],
+  'Infrastructure Damage': ['Structural safety inspection','Cordon off unsafe area','Plan repair works','Estimate repair budget'],
+  'Public Health': ['Deploy medical camp','Test local water sources','Distribute medical supplies','Run awareness campaign'],
+  'Water Scarcity': ['Survey water access points','Repair / install handpumps','Coordinate tanker supply','Plan long-term borewell']
+};
+
+let challenges = [
+  mk('Embankment showing cracks before monsoon','Villagers near the river embankment report visible cracks and seepage, worried about a breach once rains intensify.','Ranchi','Flood','High','Matched',72),
+  mk('Slope subsidence above NH-33 stretch','A section of hillside above the highway has slid twice this week, debris blocking one lane.','Ramgarh','Landslide','Critical','In progress',null),
+  mk('Borewells running dry across three panchayats','Groundwater levels have dropped sharply; several handpumps are no longer drawing water.','Palamu','Drought','Medium','Classified',null),
+  mk('Smoke reported from reserve forest patch','Local residents spotted smoke rising from a forest patch near the eastern boundary, no fire brigade seen yet.','Giridih','Forest Fire','High','Submitted',null),
+  mk('Gas smell near industrial estate','Workers report a persistent gas odour near the packaging unit gate, unclear source.','Jamshedpur (East Singhbhum)','Industrial Hazard','Critical','Needs evidence',null),
+  mk('Old bridge deck showing large cracks','A decades-old bridge deck has visible cracking; local transport still crossing daily.','Dhanbad','Infrastructure Damage','High','Resolved',1400),
+  mk('Fever cases rising after flooding','A cluster of fever and stomach illness cases reported in a flood-affected colony.','Deoghar','Public Health','High','Resolved',860),
+  mk('Handpump breakdowns in dry season','Two of four community handpumps have stopped working as the water table falls.','Hazaribagh','Water Scarcity','Medium','Matched',null),
+];
+
+let selectedPartner = PARTNERS[4]; // SDRF, has broadest matches for demo
+let selectedMatchId = null;
+
+function mk(title, desc, district, category, urgency, status, beneficiaries){
+  return {
+    id: 'C' + Math.random().toString(36).slice(2,8).toUpperCase(),
+    title, desc, district, category, urgency, status,
+    evidence: 'photo',
+    duplicateOf: null,
+    beneficiaries: beneficiaries,
+    tasks: CATEGORY_TASKS[category].map(t => ({label:t, done:false})),
+    milestones: [
+      {label:'Assessment complete', pct: status==='Resolved'?100:(status==='In progress'?100:0)},
+      {label:'Response deployed', pct: status==='Resolved'?100:(status==='In progress'?55:0)},
+      {label:'Recovery verified', pct: status==='Resolved'?100:0},
+    ],
+    feed: status==='Resolved' ? [{who:'Field team', when:'closed', text:'Recovery verified with local panchayat; case closed.'}] : []
+  };
+}
+
+/* ============================================================
+   CLASSIFIER (heuristic, for demo)
+   ============================================================ */
+function classify(text){
+  const t = text.toLowerCase();
+  let best = 'Infrastructure Damage', bestScore = 0;
+  for (const cat in CATEGORY_KEYWORDS){
+    const score = CATEGORY_KEYWORDS[cat].filter(k => t.includes(k)).length;
+    if (score > bestScore){ bestScore = score; best = cat; }
+  }
+  const urgentHits = URGENT_WORDS.filter(w => t.includes(w)).length;
+  let urgency = 'Low';
+  if (urgentHits >= 2) urgency = 'Critical';
+  else if (urgentHits === 1) urgency = 'High';
+  else if (t.length > 60) urgency = 'Medium';
+  return {category: best, urgency};
+}
+
+function findDuplicate(newDesc, district, category){
+  const words = new Set(newDesc.toLowerCase().split(/\W+/).filter(w => w.length > 4));
+  for (const c of challenges){
+    if (c.district !== district || c.category !== category) continue;
+    const cWords = new Set(c.desc.toLowerCase().split(/\W+/).filter(w => w.length > 4));
+    let overlap = 0;
+    words.forEach(w => { if (cWords.has(w)) overlap++; });
+    const ratio = overlap / Math.max(1, Math.min(words.size, cWords.size));
+    if (ratio > 0.35) return c;
+  }
+  return null;
+}
+
+/* ============================================================
+   ROLE SWITCHING
+   ============================================================ */
+document.getElementById('roleNav').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-role]');
+  if (!btn) return;
+  document.querySelectorAll('#roleNav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + btn.dataset.role).classList.add('active');
+  renderAll();
+});
+
+/* ============================================================
+   CITIZEN VIEW
+   ============================================================ */
+function attachLocation(){
+  document.getElementById('locHint').textContent = 'Location: GPS coordinates attached (' + (22 + Math.random()).toFixed(4) + '° N, ' + (85 + Math.random()).toFixed(4) + '° E)';
+}
+
+function submitReport(){
+  const title = document.getElementById('c-title').value.trim();
+  const desc = document.getElementById('c-desc').value.trim();
+  const district = document.getElementById('c-district').value;
+  const evidence = document.getElementById('c-evidence').value;
+  if (!title || !desc){
+    alert('Add a title and a short description before submitting.');
+    return;
+  }
+  const c = {
+    id: 'C' + Math.random().toString(36).slice(2,8).toUpperCase(),
+    title, desc, district, evidence,
+    category: null, urgency: null, duplicateOf: null,
+    status: 'Processing',
+    beneficiaries: null,
+    tasks: [], milestones: [
+      {label:'Assessment complete', pct:0}, {label:'Response deployed', pct:0}, {label:'Recovery verified', pct:0}
+    ],
+    feed: []
+  };
+  challenges.unshift(c);
+  document.getElementById('c-title').value = '';
+  document.getElementById('c-desc').value = '';
+  document.getElementById('locHint').textContent = 'Location: not attached';
+  renderAll();
+
+  setTimeout(() => {
+    const result = classify(desc);
+    const dup = findDuplicate(desc, district, result.category);
+    c.category = result.category;
+    c.urgency = result.urgency;
+    c.tasks = CATEGORY_TASKS[result.category].map(t => ({label:t, done:false}));
+    if (dup){
+      c.duplicateOf = dup.title;
+      c.status = 'Needs evidence';
+    } else {
+      c.status = 'Classified';
+    }
+    renderAll();
+  }, 1400);
+}
+
+function statusChip(status){
+  const map = {
+    'Processing': 'chip-neutral',
+    'Submitted': 'chip-neutral',
+    'Needs evidence': 'chip-danger',
+    'Classified': 'chip-accent',
+    'Matched': 'chip-info',
+    'In progress': 'chip-accent',
+    'Resolved': 'chip-success'
+  };
+  return `<span class="chip ${map[status] || 'chip-neutral'}">${status}</span>`;
+}
+
+const PIPELINE_ORDER = ['Submitted','Needs evidence','Classified','Matched','In progress','Resolved'];
+
+function stepperHTML(status){
+  const idx = Math.max(0, PIPELINE_ORDER.indexOf(status === 'Processing' ? 'Submitted' : status));
+  const shown = ['Submitted','Classified','Matched','In progress','Resolved'];
+  const shownIdx = shown.indexOf(status) >= 0 ? shown.indexOf(status) : (status==='Processing' || status==='Needs evidence' ? 0 : 0);
+  return shown.map((s,i) => {
+    let cls = '';
+    if (i < shownIdx) cls = 'done';
+    else if (i === shownIdx) cls = 'current';
+    return `<div class="step ${cls}"><span class="dot"></span>${s}</div>` + (i < shown.length-1 ? '<div class="step-line"></div>' : '');
+  }).join('');
+}
+
+function renderCitizen(){
+  const host = document.getElementById('citizenReports');
+  if (!challenges.length){ host.innerHTML = '<div class="empty">No reports yet.</div>'; return; }
+  host.innerHTML = challenges.map(c => `
+    <div class="report-item">
+      <div class="report-top">
+        <div>
+          <div class="report-title">${escapeHtml(c.title)}</div>
+          <div class="report-meta">${c.district}${c.category ? ' · ' + c.category : ''}</div>
+        </div>
+        ${statusChip(c.status)}
+      </div>
+      ${c.status === 'Processing' ? '<div class="processing"><span class="spinner"></span>AI reviewing report…</div>' : ''}
+      ${c.duplicateOf ? `<div class="field-hint" style="color:var(--danger);margin-top:8px;">Possible duplicate of: "${escapeHtml(c.duplicateOf)}" — flagged for reviewer confirmation.</div>` : ''}
+      ${c.status !== 'Processing' ? `<div class="stepper">${stepperHTML(c.status)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   REVIEWER VIEW
+   ============================================================ */
+function populateReviewerFilters(){
+  const catSel = document.getElementById('f-category');
+  const distSel = document.getElementById('f-district');
+  if (catSel.options.length <= 1){
+    Object.keys(CATEGORY_KEYWORDS).forEach(cat => {
+      const o = document.createElement('option'); o.textContent = cat; catSel.appendChild(o);
+    });
+  }
+  if (distSel.options.length <= 1){
+    const districts = [...new Set(challenges.map(c => c.district))];
+    districts.forEach(d => { const o = document.createElement('option'); o.textContent = d; distSel.appendChild(o); });
+  }
+}
+
+let expandedRow = null;
+
+function renderReviewer(){
+  populateReviewerFilters();
+  const fStatus = document.getElementById('f-status').value;
+  const fCategory = document.getElementById('f-category').value;
+  const fDistrict = document.getElementById('f-district').value;
+
+  const rows = challenges.filter(c => {
+    const st = c.status === 'Processing' ? 'Submitted' : c.status;
+    if (fStatus && st !== fStatus) return false;
+    if (fCategory && c.category !== fCategory) return false;
+    if (fDistrict && c.district !== fDistrict) return false;
+    return true;
+  });
+
+  const body = document.getElementById('reviewerBody');
+  if (!rows.length){ body.innerHTML = `<tr><td colspan="6"><div class="empty">No reports match these filters.</div></td></tr>`; return; }
+
+  body.innerHTML = rows.map(c => {
+    const st = c.status === 'Processing' ? 'Submitted' : c.status;
+    const canApprove = st === 'Submitted' || st === 'Needs evidence';
+    const canMatch = st === 'Classified';
+    const isOpen = expandedRow === c.id;
+    let rowHtml = `
+      <tr onclick="toggleRow('${c.id}')" style="cursor:pointer;">
+        <td><strong>${escapeHtml(c.title)}</strong></td>
+        <td>${c.district}</td>
+        <td>${c.category || '—'}</td>
+        <td>${c.urgency ? urgencyChip(c.urgency) : '—'}</td>
+        <td>${statusChip(st)}</td>
+        <td style="text-align:right;color:var(--muted);">${isOpen ? '▲' : '▼'}</td>
+      </tr>`;
+    if (isOpen){
+      rowHtml += `
+      <tr class="row-detail"><td colspan="6">
+        <div class="detail-grid">
+          <div class="detail-block">
+            <h4>Description</h4>
+            <p style="margin:0;font-size:13.5px;">${escapeHtml(c.desc)}</p>
+            <h4 style="margin-top:14px;">Evidence</h4>
+            <p style="margin:0;font-size:13.5px;">${c.evidence === 'photo' ? 'Photo attached' : c.evidence === 'voice' ? 'Voice note attached' : 'No evidence attached'}</p>
+          </div>
+          <div class="detail-block">
+            <h4>AI assessment</h4>
+            <p style="margin:0;font-size:13.5px;">Category: ${c.category || 'pending'} &nbsp;·&nbsp; Urgency: ${c.urgency || 'pending'}</p>
+            ${c.duplicateOf ? `<p style="margin:8px 0 0;color:var(--danger);font-size:13px;">Possible duplicate of "${escapeHtml(c.duplicateOf)}"</p>` : ''}
+          </div>
+        </div>
+        <div class="actions-row">
+          ${canApprove ? `<button class="btn btn-primary btn-small" onclick="event.stopPropagation(); approveReport('${c.id}')">Validate & classify</button>` : ''}
+          ${canApprove ? `<button class="btn btn-outline-danger btn-small" onclick="event.stopPropagation(); requestEvidence('${c.id}')">Request more evidence</button>` : ''}
+          ${canMatch ? `<button class="btn btn-primary btn-small" onclick="event.stopPropagation(); findPartners('${c.id}')">Find partners</button>` : ''}
+          ${!canApprove && !canMatch ? `<span class="field-hint" style="margin:0;">No reviewer action pending on this report.</span>` : ''}
+        </div>
+      </td></tr>`;
+    }
+    return rowHtml;
+  }).join('');
+}
+
+function toggleRow(id){ expandedRow = expandedRow === id ? null : id; renderReviewer(); }
+
+function urgencyChip(u){
+  const map = {'Low':'chip-neutral','Medium':'chip-accent','High':'chip-danger','Critical':'chip-danger'};
+  return `<span class="chip ${map[u]}">${u}</span>`;
+}
+
+function approveReport(id){
+  const c = challenges.find(c => c.id === id);
+  if (!c.category){ const r = classify(c.desc); c.category = r.category; c.urgency = r.urgency; c.tasks = CATEGORY_TASKS[r.category].map(t=>({label:t,done:false})); }
+  c.status = 'Classified';
+  c.duplicateOf = null;
+  renderAll();
+}
+function requestEvidence(id){
+  const c = challenges.find(c => c.id === id);
+  c.status = 'Needs evidence';
+  renderAll();
+}
+function findPartners(id){
+  const c = challenges.find(c => c.id === id);
+  c.status = 'Matched';
+  renderAll();
+  document.querySelector('#roleNav button[data-role="partner"]').click();
+}
+
+/* ============================================================
+   PARTNER VIEW
+   ============================================================ */
+function renderPartnerList(){
+  document.getElementById('partnerList').innerHTML = PARTNERS.map(p => `
+    <div class="partner-card ${p.id === selectedPartner.id ? 'active' : ''}" onclick="selectPartner('${p.id}')">
+      <div class="pname">${p.name}</div>
+      <div class="field-hint" style="margin-top:2px;">${p.district}</div>
+      <div class="ptags">${p.tags.map(t => `<span class="chip chip-info">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+function selectPartner(id){
+  selectedPartner = PARTNERS.find(p => p.id === id);
+  selectedMatchId = null;
+  renderPartner();
+}
+
+function renderMatchList(){
+  const eligible = challenges.filter(c => (c.status === 'Matched' || c.status === 'In progress') && c.category && selectedPartner.tags.includes(c.category));
+  const host = document.getElementById('matchList');
+  if (!eligible.length){ host.innerHTML = '<div class="empty">No matched challenges for this partner yet.</div>'; return; }
+  host.innerHTML = eligible.map(c => {
+    const sameDistrict = c.district === selectedPartner.district;
+    const score = sameDistrict ? 92 : 68;
+    return `
+    <div class="match-item ${selectedMatchId === c.id ? 'selected' : ''}" onclick="openWorkspace('${c.id}')">
+      <div class="report-top">
+        <div>
+          <div class="report-title">${escapeHtml(c.title)}</div>
+          <div class="report-meta">${c.district} · ${c.category}</div>
+        </div>
+        ${statusChip(c.status)}
+      </div>
+      <div class="field-hint">Match score</div>
+      <div class="match-bar-track"><div class="match-bar-fill" style="width:${score}%;"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function openWorkspace(id){
+  selectedMatchId = id;
+  renderPartner();
+}
+
+function renderWorkspace(){
+  const host = document.getElementById('workspaceHost');
+  if (!selectedMatchId){ host.innerHTML = ''; return; }
+  const c = challenges.find(c => c.id === selectedMatchId);
+  if (!c){ host.innerHTML=''; return; }
+
+  host.innerHTML = `
+    <div class="card workspace">
+      <h3>Workspace — ${escapeHtml(c.title)}</h3>
+      <label style="margin-top:0;">Response tasks</label>
+      <div>
+        ${c.tasks.map((t,i) => `
+          <div class="task-item ${t.done ? 'done' : ''}">
+            <input type="checkbox" id="task-${i}" ${t.done ? 'checked' : ''} onchange="toggleTask('${c.id}', ${i})" />
+            <label for="task-${i}" style="margin:0;font-weight:400;color:var(--ink);">${escapeHtml(t.label)}</label>
+          </div>
+        `).join('')}
+      </div>
+
+      <label>Milestones</label>
+      ${c.milestones.map((m,i) => `
+        <div class="milestone">
+          <div class="milestone-top"><span>${m.label}</span><span>${m.pct}%</span></div>
+          <div class="milestone-bar"><div class="milestone-fill" style="width:${m.pct}%;"></div></div>
+        </div>
+      `).join('')}
+      <button class="btn btn-ghost btn-small" onclick="advanceMilestone('${c.id}')">Mark next milestone progress</button>
+      ${c.milestones.every(m => m.pct === 100) && c.status !== 'Resolved' ? `<button class="btn btn-primary btn-small" style="margin-left:8px;" onclick="resolveChallenge('${c.id}')">Close as resolved</button>` : ''}
+
+      <label>Field updates</label>
+      <div class="feed" id="feed-${c.id}">
+        ${c.feed.length ? c.feed.map(f => `<div class="feed-item"><div class="fmeta">${f.who} · ${f.when}</div>${escapeHtml(f.text)}</div>`).join('') : '<div class="empty">No updates posted yet.</div>'}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input type="text" id="updateInput-${c.id}" placeholder="Post a field update…" />
+        <button class="btn btn-primary btn-small" onclick="postUpdate('${c.id}')">Post</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleTask(id, idx){
+  const c = challenges.find(c => c.id === id);
+  c.tasks[idx].done = !c.tasks[idx].done;
+  if (c.status === 'Matched') c.status = 'In progress';
+  renderAll();
+}
+function advanceMilestone(id){
+  const c = challenges.find(c => c.id === id);
+  const next = c.milestones.find(m => m.pct < 100);
+  if (next) next.pct = Math.min(100, next.pct + 25);
+  if (c.status === 'Matched') c.status = 'In progress';
+  renderAll();
+}
+function resolveChallenge(id){
+  const c = challenges.find(c => c.id === id);
+  c.status = 'Resolved';
+  c.beneficiaries = c.beneficiaries || Math.round(200 + Math.random()*1200);
+  c.feed.push({who:'Field team', when:'just now', text:'All milestones complete; recovery verified with local panchayat.'});
+  renderAll();
+}
+function postUpdate(id){
+  const input = document.getElementById('updateInput-' + id);
+  const val = input.value.trim();
+  if (!val) return;
+  const c = challenges.find(c => c.id === id);
+  c.feed.push({who:'Partner team', when:'just now', text: val});
+  input.value = '';
+  renderAll();
+}
+
+function renderPartner(){
+  renderPartnerList();
+  renderMatchList();
+  renderWorkspace();
+}
+
+/* ============================================================
+   IMPACT VIEW
+   ============================================================ */
+function renderImpact(){
+  const total = challenges.length;
+  const resolved = challenges.filter(c => c.status === 'Resolved').length;
+  const matchedOrLater = challenges.filter(c => ['Matched','In progress','Resolved'].includes(c.status)).length;
+  const beneficiaries = challenges.reduce((s,c) => s + (c.beneficiaries || 0), 0);
+
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="card kpi-card"><div class="kpi-num">${total}</div><div class="kpi-label">Total reports</div></div>
+    <div class="card kpi-card"><div class="kpi-num">${resolved}</div><div class="kpi-label">Resolved</div></div>
+    <div class="card kpi-card"><div class="kpi-num">${beneficiaries.toLocaleString('en-IN')}</div><div class="kpi-label">People reached (resolved cases)</div></div>
+  `;
+
+  const stages = [
+    ['Submitted', challenges.length],
+    ['Validated', challenges.filter(c => ['Classified','Matched','In progress','Resolved'].includes(c.status)).length],
+    ['Classified', challenges.filter(c => c.category).length],
+    ['Matched', matchedOrLater],
+    ['Collaborating', challenges.filter(c => ['In progress','Resolved'].includes(c.status)).length],
+    ['Resolved', resolved],
+  ];
+  document.getElementById('pipeline').innerHTML = stages.map((s,i) => `
+    <div class="pstage"><div class="pnum">0${i+1}</div><div class="pcount">${s[1]}</div><div class="plabel">${s[0]}</div></div>
+    ${i < stages.length-1 ? '<div class="parrow">→</div>' : ''}
+  `).join('');
+
+  const catCounts = {};
+  challenges.forEach(c => { if (c.category) catCounts[c.category] = (catCounts[c.category]||0) + 1; });
+  const maxCat = Math.max(1, ...Object.values(catCounts));
+  document.getElementById('categoryBars').innerHTML = Object.keys(CATEGORY_KEYWORDS).map(cat => {
+    const n = catCounts[cat] || 0;
+    return `<div class="bar-row"><span>${cat}</span><div class="bar-track"><div class="bar-fill" style="width:${(n/maxCat*100)}%;"></div></div><span>${n}</span></div>`;
+  }).join('');
+
+  const byDistrict = {};
+  challenges.forEach(c => {
+    byDistrict[c.district] = byDistrict[c.district] || {total:0, resolved:0};
+    byDistrict[c.district].total++;
+    if (c.status === 'Resolved') byDistrict[c.district].resolved++;
+  });
+  document.getElementById('districtBody').innerHTML = Object.keys(byDistrict).map(d => `
+    <tr><td>${d}</td><td>${byDistrict[d].total}</td><td>${byDistrict[d].resolved}</td></tr>
+  `).join('');
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderAll(){
+  renderCitizen();
+  renderReviewer();
+  renderPartner();
+  renderImpact();
+}
+renderAll();
+</script>
+</body>
+</html>
